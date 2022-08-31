@@ -1,0 +1,429 @@
+===== Access Credentials =====
+
+** Create a new Musician account
+
+    POST /login/musician
+
+    request.body = JSON {
+        "User" : "marcoPLG",
+        "Password" : "thisWillBeCrypted"
+    }
+
+    response:
+        200 OK
+        500 server error
+
+** Create a new Group account
+
+    POST /login/group
+    request.body = JSON {
+        "User" : "anb2022",
+        "Password" : "thisWillBeCrypted2"
+    }
+
+    response:
+        200 OK
+        500 server error
+
+===== Musicians =====
+
+** Create a new musician profile **
+
+    POST /musicians
+
+    request.body = JSON {
+        "name" : "Marco",
+        "surname" : "Pellegatta",
+        ...
+    }
+
+    response: the ID of the inserted musician
+
+    200 OK with header = {
+        ...
+        "musicianID" : 1
+    }
+
+    or 500 server error
+
+** Modify Musician's profile information **
+
+    PUT /musicians/:musicianID
+
+    request.params = ID of the profile to modify
+
+    request.body = JSON {
+        "newAge" : 22,
+        "newCity" : "Torino"
+        ...
+    }
+
+    response: 
+        200 OK
+        400 not found
+        500 server error
+
+** List all Musician profiles **
+
+    GET /musicians
+
+    response: array of JSON objects or error
+    
+        response.body = JSON {
+            "musicians" : [
+                {
+                    "ID" : 1,
+                    "name" : "Marco"
+                    ...
+                },
+                {
+                    "ID" : 10,
+                    "name" : "Sara"
+                    ...
+                }
+            ]
+        }
+
+        or 500 server error
+
+** Retrieve a Musician profile **
+
+    GET /musicians/:musicianID
+
+    request.params = ID of the musician
+
+    response: musician's profile or error
+        
+        response.body = JSON {
+            "ID" : 1,
+            "name" : "Marco",
+            ...
+        }
+
+        or 400 not found
+        or 500 server error
+
+===== Groups =====
+
+** Create a new group profile **
+
+    POST /groups
+
+    request.body = JSON {
+        "name" : "ANB",
+        "city" : "Milano"
+        ...
+    }
+
+    response: the ID of the inserted group
+
+    200 OK with header = {
+        ...
+        "groupID" : 14
+    }
+
+    or 500 server error
+
+** Modify a group profile **
+
+    PUT /groups/:groupID
+
+    request.params = the ID of the group to modify
+
+    request.body = JSON {
+        "newCity" : "Magenta",
+        "newMusiciansList" : "Alessio : chitarra elettrica, Sara : cantante, Marco : bateria"
+        ...
+    }
+
+    response:
+        200 OK
+        404 not found
+        500 server error
+
+** List all group profiles **
+
+    GET /groups
+
+    response.body = array of JSON objects or error
+
+    response.body = JSON {
+        "groups" : [
+            {
+                "ID" : 14,
+                "name" : "ANB",
+                "city" : "Magenta"
+                ...
+            },
+            {
+                "ID" : 24
+                "name" : "LLVM",
+                "city" : "Torino",
+            }
+        ]
+    }
+
+    or 500 server error
+
+** Retrieve a group profile **
+
+    GET /groups/:groupID
+
+    response.body = JSON {
+        "ID" : 14,
+        "name" : "ANB"
+        ...
+    }
+
+    or 404 not found
+    or 500 server error
+
+===== Announcements =====
+
+** Publish an announcement **
+
+    POST /announcements
+
+    request.body = JSON {
+        "AuthorID" : 1,
+        "AuthorType" : "MUSICIAN",
+        "AnnouncementType" : "MEETING"
+        ... 
+    }
+
+    response: the ID of the inserted announcement or server error
+        200 OK with header = {
+            ...
+            "announcementID" : 22
+        }
+
+        or 500 server error
+
+** Remove an announcement **
+
+    DELETE /announcements/:announcementID
+
+    request.params = ID of the announcement to remove
+
+    response: 
+        200 OK
+        404 not found
+        500 server error
+
+** Modify / Update an announcement **
+
+    PUT /announcements/:announcementID
+
+    request.params = ID of the announcement to modify / update
+    request.body = JSON {
+        "description" : "new description",
+        "city" : "new city"
+        ...
+    }
+
+    response:
+        200 OK
+        404 not found
+        500 server error
+
+** List all announcements **
+
+    GET /announcements
+
+    response.body = array of JSON objects or error
+
+    response.body = JSON {
+        "announcements" : [
+            {
+                "ID" : 1,
+                "AnnouncementType" : "MEETING"
+                ...
+            }, 
+            {
+                "ID" : 22,
+                "AnnouncementType" : "G_SEARCH_M"
+                ...
+            }
+        ]
+    }
+
+    or 500 server error
+
+===== Demo Files =====
+
+** Upload a demo file **
+
+    POST /demoFiles
+
+    request.body = JSON {
+        "AuthorID" : 1
+        "AuthorType" : "MUSICIAN",
+        ...
+        "FilePath" : "/demoFiles/musicians/musicDemo1.mp3"
+    }
+
+    response: the ID of the inserted demo or server error
+
+        200 OK with header = {
+            ...
+            "demoID" : 32
+        }
+
+        or 500 server error
+
+** Remove a demo file **
+
+    DELETE /demoFiles/:demoID
+
+    request.params = ID of the file to delete
+
+    response:
+        200 OK
+        404 not found
+        500 server error
+
+** List all demo file of a musician or a group **
+
+    GET /demoFiles/?AuthorID=''&AuthorType=''
+
+    request.query.AuthorID = the ID of the author of the demo
+    request.query.AuthorType = the type of the author (MUSICIAN or GROUP)
+
+    response.body = array of JSON objects or error
+
+        response.body = JSON {
+            "demoFiles" : [
+                {
+                    "AuthorID" : 1,
+                    "AuthorType" : "MUSICIAN",
+                    "FilePath" : "/demoFiles/musicians/musicDemo1.mp3"
+                    ...
+                },
+                {
+                    "AuthorID" : 2,
+                    "AuthorType" : "GROUP",
+                    "FilePath" : "/demoFiles/groups/greenG.wav"
+                    ...
+                }
+            ]
+        }
+
+        or 404 not found
+        or 500 server error
+
+===== Membership Requests =====
+
+IMPLEMENTARLE PER ULTIME ???
+
+** Musician sends a Membership request to a Group
+
+    POST /membershipRequests
+
+    request.body = JSON {
+        "MusicianID" : 1,
+        "GroupID" : 14
+        ...
+    }
+
+    response: the ID of the inserted membership requests
+
+        200 OK with header = {
+            ...
+            "membershipRequestsID" : 12
+        }
+
+        or 500 server error
+
+** Musician removes a Membership request to a Group
+
+    DELETE /membershipRequests/:requestID
+
+    request.params = ID of the membership requests to remove
+
+    response:
+        200 OK
+        404 not found
+        500 server error
+
+** List all membership requests sent by a Musician
+
+    GET /membershipRequests/musician/:musicianID
+
+    request.params = ID of the Musician who's sent requests are to be listed
+
+    response = array of JSON objects with all the requests
+
+    response.body = JSON {
+        "membershipRequests" : [
+            {
+                "RequestID" : 12
+                "MusicianID" : 1,
+                "GroupID" : 14
+                ...
+            },
+            {
+                "RequestID" : 24
+                "MusicianID" : 1,
+                "GroupID" : 19
+                ...
+            }
+        ]
+    }
+
+    or 404 not found
+    or 500 server error
+
+** List all membership requests received by a Group
+
+    GET /membershipRequests/group/:groupID
+
+    request.params = ID of the Group who's received requests are to be listed
+
+    response = array of JSON objects with all the requests
+
+    response.body = JSON {
+        "membershipRequests" : [
+            {
+                "RequestID" : 12
+                "MusicianID" : 1,
+                "GroupID" : 14
+                ...
+            },
+            {
+                "RequestID" : 30
+                "MusicianID" : 9,
+                "GroupID" : 14
+                ...
+            }
+        ]
+    }
+
+    or 404 not found
+    or 500 server error
+
+==========
+
+
+
+
+ESEMPIO DI POSSIBILE FILTRO "AVANZATO" DIRETTAMENTE DALLA API --> più complesso da implementare ma più efficiente, rispetto a richiedere tutti i dati e filtrarli client-side
+req.body = JSON {
+    ...
+    "filters" : [
+        "city" : ["Magenta", "Corbetta"],
+        "musicalGenres" : ["Indie Rock", "Rock"]
+    ]
+}
+
+sarà difficile da parsificare correttamente e generare le query SQL, forse non ne vale neanche la pena per ora
+
+
+===== link utili =====
+
+upload di file al server:    https://www.bacancytechnology.com/blog/file-upload-using-multer-with-nodejs-and-express
+https://developers.deepgram.com/blog/2021/11/sending-audio-files-to-expressjs-server/
+come inviare file usando JSON (non si può a meno di convertirlo in stringa): https://stackoverflow.com/questions/59548118/how-to-send-a-file-in-array-of-object-to-express-server
+    serviranno altri endpoint nella API per gestire l'invio e la ricezione di file (sia foto che audio)
+    per servire file (audio e foto) dal server in teoria basta il middleware static --> gestire solo l'invio dal client al server
+    esempio: https://www.digitalocean.com/community/tutorials/nodejs-serving-static-files-in-express
+    oppure: https://stackoverflow.com/questions/63221550/how-to-serve-a-static-file-depending-on-req-params-in-express
