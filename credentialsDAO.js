@@ -45,6 +45,18 @@ class CredentialsDAO {
         });
     }
 
+    // used by passport to deserialize a previously authenticated Musician
+    getMusicianCredentialsByID(id) {
+        return new Promise((resolve, reject) => {
+            const sql = "SELECT * FROM MusiciansCredentials WHERE ProfileID = ?";
+            this.db.get(sql, [id], function(err, row) {
+                if (err) return reject(err);
+                if (row === undefined) return resolve({"error" : `no user found with ProfileID (${id})`});
+                return resolve(row);
+            });
+        });
+    }
+
     // used to insert a new group into the credentials database, to later use for authentication 
     // a group must be in the form {"user" : 'name or email', "password" : 'clear text password'}
     insertNewGroup(group) {
@@ -74,6 +86,28 @@ class CredentialsDAO {
         });
     }
 
+    // used by passport to deserialize a previously authenticated Musician
+    getGroupCredentialsByID(id) {
+        return new Promise((resolve, reject) => {
+            const sql = "SELECT * FROM GroupsCredentials WHERE ProfileID = ?";
+            this.db.get(sql, [id], function(err, row) {
+                if (err) return reject(err);
+                if (row === undefined) return resolve({"error" : `no user found with ProfileID (${id})`});
+                return resolve(row);
+            });
+        });
+    }
+
 }
+
+// main function for testing purpose only
+async function main() {
+    const db = new CredentialsDAO();
+    //let res = await db.insertNewMusician({"user" : "ste.dece", "password" : "ziopera"});
+    //let res = await db.insertNewGroup({"user" : "anb2022", "password" : "greengoblin"});
+    //console.log(res);
+}
+
+//main()    // be careful to not call it, otherwise it will be executed when the module get's imported
 
 module.exports = CredentialsDAO;
