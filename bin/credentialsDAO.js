@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 
 class CredentialsDAO {
     constructor() {
-        this.DBSOURCE = './loginCredentials.db';
+        this.DBSOURCE = './data/loginCredentials.db';
         this.db = new sqlite.Database(this.DBSOURCE, (err) => {
             if (err) {
                 console.error(err);

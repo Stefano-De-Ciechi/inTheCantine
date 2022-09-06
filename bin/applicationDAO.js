@@ -5,7 +5,7 @@ const sqlite = require('sqlite3');
 // TODO should each function do a check on his input?
 class ApplicationDAO {
     constructor() {
-        this.DBSOURCE = './applicationData.db';
+        this.DBSOURCE = './data/applicationData.db';
         this.db = new sqlite.Database(this.DBSOURCE, (err) => {
             if (err) {
                 console.error(err);
