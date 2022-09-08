@@ -24,7 +24,7 @@ class CredentialsDAO {
             const hash = await bcrypt.hash(musician.password, 10);
 
             this.db.run(sql, [musician.user, hash], function(err) {
-                if (err) return reject(err);
+                if (err) return reject({"error" : err});
                 return resolve(this.lastID);
             });
         });
@@ -35,7 +35,7 @@ class CredentialsDAO {
         return new Promise((resolve, reject) => {
             const sql = "SELECT * FROM MusiciansCredentials WHERE User = ?";
             this.db.get(sql, [user], function(err, row) {
-                if (err) return reject(err);
+                if (err) return reject({"error" : err});
                 if (row === undefined) return resolve({"error" : "user not found"});
 
                 const user = {"profileID" : row.ProfileID, "user" : row.User};
@@ -50,9 +50,10 @@ class CredentialsDAO {
         return new Promise((resolve, reject) => {
             const sql = "SELECT * FROM MusiciansCredentials WHERE ProfileID = ?";
             this.db.get(sql, [id], function(err, row) {
-                if (err) return reject(err);
+                if (err) return reject({"error" : err});
                 if (row === undefined) return resolve({"error" : `no user found with ProfileID (${id})`});
-                return resolve(row);
+                //return resolve(row);
+                return resolve({"profileID" : row.ProfileID, "user" : row.User});   // the hashed password is not sent
             });
         });
     }
@@ -65,7 +66,7 @@ class CredentialsDAO {
             const hash = await bcrypt.hash(group.password, 10);
 
             this.db.run(sql, [group.user, hash], function(err) {
-                if (err) return reject(err);
+                if (err) return reject({"error" : err});
                 return resolve(this.lastID);
             });
         });
@@ -76,7 +77,7 @@ class CredentialsDAO {
         return new Promise((resolve, reject) => {
             const sql = "SELECT * FROM GroupsCredentials WHERE User = ?";
             this.db.get(sql, [user], function(err, row) {
-                if (err) return reject(err);
+                if (err) return reject({"error" : err});
                 if (row === undefined) return resolve({"error" : "user not found"});
                 
                 const user = {"profileID" : row.ProfileID, "user" : row.User};
@@ -91,23 +92,14 @@ class CredentialsDAO {
         return new Promise((resolve, reject) => {
             const sql = "SELECT * FROM GroupsCredentials WHERE ProfileID = ?";
             this.db.get(sql, [id], function(err, row) {
-                if (err) return reject(err);
+                if (err) return reject({"error" : err});
                 if (row === undefined) return resolve({"error" : `no user found with ProfileID (${id})`});
-                return resolve(row);
+                //return resolve(row);
+                return resolve({"profileID" : row.ProfileID, "user" : row.User});   // the hashed password is not sent
             });
         });
     }
 
 }
-
-// main function for testing purpose only
-async function main() {
-    const db = new CredentialsDAO();
-    //let res = await db.insertNewMusician({"user" : "ste.dece", "password" : "ziopera"});
-    //let res = await db.insertNewGroup({"user" : "anb2022", "password" : "greengoblin"});
-    //console.log(res);
-}
-
-//main()    // be careful to not call it, otherwise it will be executed when the module get's imported
 
 module.exports = CredentialsDAO;

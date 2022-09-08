@@ -37,21 +37,19 @@ passport.use('groupsLocalStrategy', new LocalStrategy(async function(username, p
 
 // function used to "remember the loged-in" user, by saving it's profileID (or anything else)
 passport.serializeUser(function(user, done) {
-    done(null, {"id" : user.profileID, "type" : user.type});    // instead of serializing only the ID, a type is also used to disinguish a Musician from a Group
+    done(null, {"profileID" : user.profileID, "type" : user.type});    // instead of serializing only the ID, a type is also used to disinguish a Musician from a Group
 });
 
 passport.deserializeUser(async function(user, done) {
     let logOutUser;
     try {
         if (user.type === "MUSICIAN") {
-            logOutUser = await credentialsDAO.getMusicianCredentialsByID(user.id);
-            delete logOutUser.Password;     // to not send the hashed password stored in the database
+            logOutUser = await credentialsDAO.getMusicianCredentialsByID(user.profileID);
             logOutUser.type = "MUSICIAN";   // the type is also added to the deserialized object
         }
         
         if (user.type === "GROUP") {
-            logOutUser = await credentialsDAO.getGroupCredentialsByID(user.id);
-            delete logOutUser.Password;     // to not send the hashed password stored in the database
+            logOutUser = await credentialsDAO.getGroupCredentialsByID(user.profileID);
             logOutUser.type = "GROUP";      // the type is also added to the deserialized object
         }
 
@@ -95,6 +93,7 @@ const musicianOrGroupIsLoggedIn = function(req, res, next) {
 
 /* ===== Custom Routes ===== */
 
+// TODO remove tests
 loginRouter.get('/test/musicians', musicianIsLoggedIn, (req, res) => {
     //res.json({"message" : "correctly logged in as"});
     res.json({"correct musician login" : req.user});
@@ -107,6 +106,31 @@ loginRouter.get('/test/groups', groupIsLoggedIn, (req, res) => {
 loginRouter.get('/both/test', musicianOrGroupIsLoggedIn, (req, res) => {
     res.json({"correct login" : req.user});
 });
+
+// TODO login of groups and musicians is basically identical, the only thing that changes is the parameter in the passport.authenticate --> refactor and maybe transform all into one function
+loginRouter.post('/signup/musicians', [
+    // express validator statements and checks
+    oneOf([
+        check("user").isLength({"min" : 5}).withMessage("username must have a length of at least 5 characters"),
+        check("user").isEmail().withMessage("username must be a valid name or a valid email")
+    ]),
+    check("password").isLength({"min" : 6}).withMessage("password must be at least 6 characters long")
+
+    ], async (req, res, next) => {
+        // express validator errors checking
+        const validationErrors = validationResult(req);
+        if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
+
+        let data;
+        try {
+            data = await credentialsDAO.insertNewMusician(req.body);
+            if (data.err) return res.status(200).json({"error" : data.err});
+            return res.status(200).json({"profileID" : data});
+        } catch (err) {
+            return res.status(500).json({"error" : err});
+        }
+    }
+);
 
 loginRouter.post('/login/musicians', [
         // express validator statements and checks
@@ -145,7 +169,30 @@ loginRouter.delete('/logout/musicians/current', musicianIsLoggedIn, (req, res) =
     res.end();
 });
 
-// TODO login of groups and musicians is basically identical, the only thing that changes is the parameter in the passport.authenticate --> refactor and maybe transform all into one function
+loginRouter.post('/signup/groups', [
+    // express validator statements and checks
+    oneOf([
+        check("user").isLength({"min" : 5}).withMessage("username must have a length of at least 5 characters"),
+        check("user").isEmail().withMessage("username must be a valid name or a valid email")
+    ]),
+    check("password").isLength({"min" : 6}).withMessage("password must be at least 6 characters long")
+
+    ], async (req, res, next) => {
+        // express validator errors checking
+        const validationErrors = validationResult(req);
+        if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
+
+        let data;
+        try {
+            data = await credentialsDAO.insertNewGroup(req.body);
+            if (data.err) return res.status(200).json({"error" : data.err});
+            return res.status(200).json({"profileID" : data});
+        } catch (err) {
+            return res.status(500).json({"error" : err});
+        }
+    }
+);
+
 loginRouter.post('/login/groups', [  
     // express validator statements and checks
     oneOf([

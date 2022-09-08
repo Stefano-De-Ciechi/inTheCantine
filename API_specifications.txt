@@ -84,6 +84,7 @@
             ]
         }
 
+        or 204 no content
         or 500 server error
 
 ** Retrieve a Musician profile **
@@ -284,7 +285,7 @@
 
 ** List all demo file of a musician or a group **
 
-    GET /demoFiles/?AuthorID=''&AuthorType=''
+    GET /demoFiles/?authorID=''&authorType=''
 
     request.query.AuthorID = the ID of the author of the demo
     request.query.AuthorType = the type of the author (MUSICIAN or GROUP)
