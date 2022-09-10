@@ -2,6 +2,8 @@
 
 /* ===== Libraries and Node Modules ===== */
 
+const fs = require('fs');
+
 const express = require('express');
 const appDataRouter = express.Router();
 
@@ -473,14 +475,21 @@ appDataRouter.delete('/demos/:demoID', musicianOrGroupIsLoggedIn, [
         }
 
         let found = false;
+        let demoPath;       // the server-side storage location of the demo file (/media/demos/...)
         for (let demo of userDemos) {
-            if (demo.ID == req.params.demoID) found = true;
+            if (demo.ID == req.params.demoID) {
+                found = true;
+                demoPath = demo.FilePath;
+                break;
+            }
         }
+
 
         if (!found) return res.status(401).json({"error" : "not authorized to remove the demo of another user"});
         
         let data;
         try {
+            fs.unlinkSync(__dirname + '/../public' + demoPath);       // deletes the audio file in the /public/media/demos folder, /../public is added here because __dirname is the /routes folder
             data = await appDataDAO.removeDemo(req.params.demoID);
             if (data.error) return res.status(200).json({"message" : data.error});
             return res.status(200).json({"changes" : data.changes});
@@ -556,7 +565,10 @@ appDataRouter.put('/announcements/:announcementID', musicianOrGroupIsLoggedIn, [
 
         let found = false;
         for (let announcement of userAnnouncements) {
-            if (announcement.ID == req.params.announcementID) found = true;
+            if (announcement.ID == req.params.announcementID) {
+                found = true;
+                break;
+            }
         }
 
         if (!found) return res.status(401).json({"error" : "not authorized to modify an announcement published by another user"});
@@ -591,7 +603,10 @@ appDataRouter.delete('/announcements/:announcementID', musicianOrGroupIsLoggedIn
 
         let found = false;
         for (let announcement of userAnnouncements) {
-            if (announcement.ID == req.params.announcementID) found = true;
+            if (announcement.ID == req.params.announcementID) {
+                found = true;
+                break;
+            }
         }
 
         if (!found) return res.status(401).json({"error" : "not authorized to remove an announcement published by another user"});
@@ -667,7 +682,10 @@ appDataRouter.delete('/membershipRequests/:membershipRequestID', musicianIsLogge
 
         let found = false;
         for (let membershipRequest of userMembershipRequests) {
-            if (membershipRequest.ID == req.params.membershipRequestID) found = true;
+            if (membershipRequest.ID == req.params.membershipRequestID) {
+                found = true;
+                break;
+            }
         }
 
         if (!found) return res.status(401).json({"error" : "not authorized to remove a membership request sent by another user"});

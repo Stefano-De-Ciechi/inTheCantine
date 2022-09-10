@@ -1,4 +1,6 @@
 node_modules
 package-lock.json
-data
+data/*
 PROCEDIMENTO.txt
+public/media/images/*
+public/media/demos/*
