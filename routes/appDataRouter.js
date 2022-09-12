@@ -267,6 +267,21 @@ function getCurrentDate() {
     return new Date(Date.now()).toISOString().split('T')[0];
 }
 
+function filterData(paramsArray, data) {
+    
+    // if no params just skip the filtering process
+    if (paramsArray.length == 0) return data;
+    
+    // the data returned from the database can get filtered multiple times, based on all the valid parameters found in req.query
+    for (let filterParam in paramsArray) {    
+        data = data.filter(row => {
+            if (row[filterParam] === undefined) return true;    // skip wrong query parameters that do not exists 
+            return row[filterParam].toLowerCase().includes(paramsArray[filterParam].toLowerCase());
+        });
+    }    
+    return data;
+}
+
 /* ===== Custom Routes ===== */
 // TODO add filters server-side with parametric queries??
 
@@ -274,17 +289,34 @@ function getCurrentDate() {
 
 /* ===== Musicians Routes ===== */
 
-// list all Musicians
-appDataRouter.get('/musicians', async (req, res) => {
-    let data;
-    try {
-        data = await appDataDAO.getAllMusicians();    // musicians data will not get processed (profileID will be needed by the application)
-        if (data.error) return res.status(200).json({"message" : "no musicians found"});     // no content found
-        return res.status(200).json({data});
-    } catch(err) {
-        return res.status(500).json({"error" : err});
+// list all Musicians, also filtering through req.query is possible, for example /api/musicians?Province=Milano&Instruments=Basso+Elettrico
+appDataRouter.get('/musicians', [
+        // using req.query to add filtering methods
+        // TODO make req.params valid even if they are not capitalized (in the database all attributes are capitalized)
+        check("City").optional(true).isString().withMessage("City must be a string"),
+        check("Province").optional(true).isString().withMessage("Province must be a string"),
+        check("MusicalTastes").optional(true).isString().withMessage("MusicalTastes must be a string"),
+        check("Instruments").optional(true).isString().withMessage("Instruments must be a string"),
+        check("AvailableForHire").optional(true).isBoolean().withMessage("AvailableForHire must be either true or false")
+    ], async (req, res) => {
+
+        const validationErrors = validationResult(req);
+        if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
+
+        let data;
+        try {
+            data = await appDataDAO.getAllMusicians();    // musicians data will not get processed (profileID will be needed by the application)
+            if (data.error) return res.status(200).json({"message" : "no musicians found"});     // no content found
+            
+            // apply filters
+            data = filterData(req.query, data);
+            
+            return res.status(200).json({data});
+        } catch(err) {
+            return res.status(500).json({"error" : err});
+        }
     }
-});
+);
 
 // retrieve Musician's data given it's profileID
 appDataRouter.get('/musicians/:musicianID', [check("musicianID").exists().withMessage("a musicianID is required").isNumeric().withMessage("musicianID must be a number")], async (req, res) => {
@@ -345,16 +377,32 @@ appDataRouter.put('/musicians', musicianIsLoggedIn, [updateOrInsertMusicianCheck
 /* ===== Groups Routes ===== */
 
 // list all Groups
-appDataRouter.get('/groups', async (req, res) => {
-    let data;
-    try {
-        data = await appDataDAO.getAllGroups();    // groups data will not get processed (profileID will be needed by the application)
-        if (data.error) return res.status(200).json({"message" : "no musicians found"});     // no content found
-        return res.status(200).json({data});
-    } catch(err) {
-        return res.status(500).json({"error" : err});
+appDataRouter.get('/groups', [
+        // using req.query to add filtering methods
+        // TODO make req.params valid even if they are not capitalized (in the database all attributes are capitalized)
+        check("City").optional(true).isString().withMessage("City must be a string"),
+        check("Province").optional(true).isString().withMessage("Province must be a string"),
+        check("MusicalGenres").optional(true).isString().withMessage("MusicalTastes must be a string"),
+        check("AvailableForHire").optional(true).isBoolean().withMessage("AvailableForHire must be either true or false")
+    ], async (req, res) => {
+
+        const validationErrors = validationResult(req);
+        if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
+
+        let data;
+        try {
+            data = await appDataDAO.getAllGroups();    // groups data will not get processed (profileID will be needed by the application)
+            if (data.error) return res.status(200).json({"message" : "no musicians found"});     // no content found
+            
+            // apply filters
+            data = filterData(req.query, data);
+            
+            return res.status(200).json({data});
+        } catch(err) {
+            return res.status(500).json({"error" : err});
+        }
     }
-});
+);
 
 // retrieve a Group's data given it's profileID
 appDataRouter.get('/groups/:groupID', [check("groupID").exists().withMessage("a groupID is required").isNumeric().withMessage("groupID must be a number")], async (req, res) => {
@@ -504,7 +552,10 @@ appDataRouter.delete('/demos/:demoID', musicianOrGroupIsLoggedIn, [
 // list all announcements or only ones published by a specific User (using optional req.query)
 appDataRouter.get('/announcements', [
         check("authorID").optional(true).isNumeric().withMessage("authorID must be a number"),
-        check("authorType").optional(true).isIn(["GROUP", "MUSICIAN"]).withMessage("authorType must be either GROUP or MUSICIAN")
+        check("authorType").optional(true).isIn(["GROUP", "MUSICIAN"]).withMessage("authorType must be either GROUP or MUSICIAN"),
+        check("City").optional(true).isString().withMessage("City must be a string"),
+        check("Province").optional(true).isString().withMessage("Province must be a string"),
+        check("AnnouncementType").optional(true).isString().withMessage("AnnouncementType must be a string")
     ], async (req, res) => {
 
         const validationErrors = validationResult(req);
@@ -516,6 +567,10 @@ appDataRouter.get('/announcements', [
             if (req.query.authorID && req.query.authorType) data = await appDataDAO.getAllProfileAnnouncements(req.query.authorID, req.query.authorType);
             else data = await appDataDAO.getAllAnnouncements();
             if (data.error) return res.status(200).json({"message" : data.error});
+            
+            // apply filters
+            data = filterData(req.query, data);
+            
             return res.status(200).json(data);
         } catch(err) {
             return res.status(500).json({"error" : err});

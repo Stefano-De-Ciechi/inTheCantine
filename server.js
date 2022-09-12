@@ -29,7 +29,7 @@ const PORT = 3000;
 /* ===== Express Endpoints' definitions ===== */
 
 app.get('/', (req, res) => {
-    res.send("operativi zio pera");
+    res.redirect('index.html');
 });
 
 app.listen(PORT, () => console.log(`magic happening on port ${PORT}`));

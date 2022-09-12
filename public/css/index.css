@@ -1,0 +1,135 @@
+@font-face {
+    font-family: 'Alfa Slab One';
+    src: url('../media/fonts/AlfaSlabOne-Regular.ttf');
+  }
+
+
+nav {
+    background-color: white;
+}
+
+.navbar-brand {
+    font-family: 'Alfa Slab One';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 66px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+
+    margin-left: 0px;
+    color: black;
+}
+
+body {
+    margin-top: 1vw;
+    margin-left: 13vw;
+    margin-right: 13vw;
+}
+
+#home-description-div {
+    font-family: 'Alfa Slab One';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 33px;
+    display: flex;
+    align-items: center;
+}
+
+.btn-round-black {
+    border-radius: 40px;
+    color: white;
+    background-color: black;
+    border-color: black;
+
+    font-family: 'Alfa Slab One';
+    font-style: normal;
+    font-weight: 400;
+    /*font-size: 20px;*/
+    line-height: 27px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+}
+
+/* not working, apparently to make it work I should use !important at the end of every attribute */
+.btn-round-black:hover {
+    background-color: rgb(68, 67, 67);
+    color: white;
+}
+
+/*
+#loginBtn, #loginBtn:focus {
+    border-radius: 32px;
+    color: white;
+    background-color: black;
+    border-color: black;
+
+    font-family: 'Alfa Slab One';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 27px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+}
+*/
+
+#loginBtn:hover {
+    background-color: rgb(68, 67, 67);
+    color: white;
+}
+
+.no-padding {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.no-margin {
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+#home-filters {
+    margin-top: 3vh;
+    margin-bottom: 3vh;
+    display: flex;
+    justify-content: center;
+    
+}
+
+.home-filter-btn {
+    color: black;
+    background-color: white;
+    border-radius: 32px;
+    border-width: 5px;
+    border-color: black;
+    margin-left: 1vw;
+    margin-right: 1vw;
+
+    font-family: 'Alfa Slab One';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 27px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+}
+
+.home-filter-btn:hover {
+    background-color: rgb(68, 67, 67);
+    color: white;
+}
+
+.home-filter-btn:active {
+    background-color: rgb(68, 67, 67);
+    color: white;
+}
+
+.img-fluid {
+    border-radius: 10px;
+}
