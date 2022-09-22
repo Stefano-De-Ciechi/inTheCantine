@@ -3,9 +3,10 @@
 const sqlite = require('sqlite3');
 const bcrypt = require('bcrypt');
 
+// this class interacts with the Login Credentials part of the database
 class CredentialsDAO {
     constructor() {
-        this.DBSOURCE = './data/loginCredentials.db';
+        this.DBSOURCE = './data/applicationData.db';
         this.db = new sqlite.Database(this.DBSOURCE, (err) => {
             if (err) {
                 console.error(err);
@@ -16,7 +17,7 @@ class CredentialsDAO {
         });
     }
 
-    // used to insert a new musician into the credentials database, to later use for authentication 
+    // used to insert a new musician into the credentials database, to later use for authentication
     // a musician must be in the form {"user" : 'name or email', "password" : 'clear text password'}
     insertNewMusician(musician) {
         return new Promise(async (resolve, reject) => {
@@ -58,7 +59,7 @@ class CredentialsDAO {
         });
     }
 
-    // used to insert a new group into the credentials database, to later use for authentication 
+    // used to insert a new group into the credentials database, to later use for authentication
     // a group must be in the form {"user" : 'name or email', "password" : 'clear text password'}
     insertNewGroup(group) {
         return new Promise(async (resolve, reject) => {
@@ -79,7 +80,7 @@ class CredentialsDAO {
             this.db.get(sql, [user], function(err, row) {
                 if (err) return reject({"error" : err});
                 if (row === undefined) return resolve({"error" : "user not found"});
-                
+
                 const user = {"profileID" : row.ProfileID, "user" : row.User};
                 const check = bcrypt.compareSync(password, row.Password);
                 return resolve({user, check});

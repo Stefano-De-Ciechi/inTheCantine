@@ -2,7 +2,6 @@
 
 /* ===== Libraries and Node Modules ===== */
 
-// TODO basically all imports are the same in both loginRouter and appDataRouter, maybe unify them creating another js file and importing it in both routers
 const express = require('express');
 const loginRouter = express.Router();
 
@@ -16,10 +15,14 @@ const Credentials_DB_Manager = require('../bin/credentialsDAO');
 const credentialsDAO = new Credentials_DB_Manager();
 
 /* ===== Passport Initialization ===== */
+
+// passport local authentication strategy for a Musician
 passport.use('musiciansLocalStrategy', new LocalStrategy(async function(username, password, done) {
     credentialsDAO.getMusicianCredentials(username, password).then(({user, check}) => {
-        if (!user) return done(null, false, {"message" : "Incorrect username or email"});
-        if (!check) return done(null, false, {"message" : "Incorrect password"});
+
+        if (!user) return done(null, false, {"error" : {"field" : "username", "message" : "Incorrect username or email"}});
+        if (!check) return done(null, false, {"error" : {"field" : "password", "message" : "Incorrect password"}});
+
         user.type = "MUSICIAN";     // added a type to use in the passport serialize and deserialize methods
         return done(null, user);
     });
@@ -28,18 +31,21 @@ passport.use('musiciansLocalStrategy', new LocalStrategy(async function(username
 // passport local authentication strategy for a Group
 passport.use('groupsLocalStrategy', new LocalStrategy(async function(username, password, done) {
     credentialsDAO.getGroupCredentials(username, password).then(({user, check}) => {
-        if (!user) return done(null, false, {"message" : "Incorrect username or email"});
-        if (!check) return done(null, false, {"message" : "Incorrect password"});
+
+        if (!user) return done(null, false, {"error" : {"field" : "username", "message" : "Incorrect username or email"}});
+        if (!check) return done(null, false, {"error" : {"field" : "password", "message" : "Incorrect password"}});
+
         user.type = "GROUP";        // added a type to use in the passport serialize and deserialize methods
         return done(null, user);
     });
 }));
 
-// function used to "remember the loged-in" user, by saving it's profileID (or anything else)
+// function used to "remember the logged-in" user, by saving it's profileID and type (or anything else)
 passport.serializeUser(function(user, done) {
     done(null, {"profileID" : user.profileID, "type" : user.type});    // instead of serializing only the ID, a type is also used to disinguish a Musician from a Group
 });
 
+// function used to retrieve a previously saved logged in user
 passport.deserializeUser(async function(user, done) {
     let logOutUser;
     try {
@@ -47,7 +53,7 @@ passport.deserializeUser(async function(user, done) {
             logOutUser = await credentialsDAO.getMusicianCredentialsByID(user.profileID);
             logOutUser.type = "MUSICIAN";   // the type is also added to the deserialized object
         }
-        
+
         if (user.type === "GROUP") {
             logOutUser = await credentialsDAO.getGroupCredentialsByID(user.profileID);
             logOutUser.type = "GROUP";      // the type is also added to the deserialized object
@@ -60,7 +66,7 @@ passport.deserializeUser(async function(user, done) {
 });
 
 loginRouter.use(session({
-    "secret" : "secret sententce that should be saved in a separate file maybe?",   // TODO try and use dotenv?
+    "secret" : "secret sententce that should be saved in a separate file!",   // TODO try and use dotenv?
     "resave" : false,
     "saveUninitialized" : false,
     "cookie" : {
@@ -75,17 +81,19 @@ loginRouter.use(passport.session());
 
 /* ===== Passport custom Middleware ===== */
 
-// routes protecting middleware for both a valid Musician or a valid Group
+// routes protecting middleware a valid Musician
 const musicianIsLoggedIn = function(req, res, next) {
     if (req.isAuthenticated() && req.user.type === "MUSICIAN") return next();
     return res.status(401).json({"statusCode" : 401, "message" : "not authenticated as a valid Musician"});
 }
 
+// routes protecting middleware a valid Group
 const groupIsLoggedIn = function(req, res, next) {
     if (req.isAuthenticated() && req.user.type === "GROUP") return next();
     return res.status(401).json({"statusCode" : 401, "message" : "not authenticated as a valid Group"});
 }
 
+// routes protecting middleware for both valid Musicians and Groups
 const musicianOrGroupIsLoggedIn = function(req, res, next) {
     if (req.isAuthenticated() && (req.user.type === "GROUP" || req.user.type === "MUSICIAN")) return next();
     return res.status(401).json({"statusCode" : 401, "message" : "not authenticated as a valid Group or a valid Musician"});
@@ -93,21 +101,9 @@ const musicianOrGroupIsLoggedIn = function(req, res, next) {
 
 /* ===== Custom Routes ===== */
 
-// TODO remove tests
-loginRouter.get('/test/musicians', musicianIsLoggedIn, (req, res) => {
-    //res.json({"message" : "correctly logged in as"});
-    res.json({"correct musician login" : req.user});
-});
+/* ===== Musicians routes ===== */
 
-loginRouter.get('/test/groups', groupIsLoggedIn, (req, res) => {
-    res.json({"correct group login" : req.user});
-});
-
-loginRouter.get('/both/test', musicianOrGroupIsLoggedIn, (req, res) => {
-    res.json({"correct login" : req.user});
-});
-
-// TODO login of groups and musicians is basically identical, the only thing that changes is the parameter in the passport.authenticate --> refactor and maybe transform all into one function
+// Musicians sign-up route
 loginRouter.post('/signup/musicians', [
     // express validator statements and checks
     oneOf([
@@ -132,6 +128,7 @@ loginRouter.post('/signup/musicians', [
     }
 );
 
+// Musicians log-in route
 loginRouter.post('/login/musicians', [
         // express validator statements and checks
         oneOf([
@@ -157,18 +154,20 @@ loginRouter.post('/login/musicians', [
     }
 );
 
+// Musicians log-out route
 loginRouter.delete('/logout/musicians/current', musicianIsLoggedIn, (req, res) => {
-    //if (req.user.type !== "GROUP") return res.status(401).send()
     let loggedOut = null;
-    if (req.user !== undefined) loggedOut = {"profileID" : req.user.ProfileID, "user" : req.user.User};
+    if (req.user !== undefined) loggedOut = {"profileID" : req.user.profileID, "user" : req.user.user};
+    console.log("received delete from:", loggedOut);
     req.logout((err) => {
         if (err) return next(err);
     });
-    if (loggedOut != null) res.json({"correctly logged-out musician" : loggedOut});
-    //res.redirect('/');
-    res.end();
+    if (loggedOut != null) return res.status(200).json({"correctly logged-out musician" : loggedOut});
 });
 
+/* ===== Musicians routes ===== */
+
+// Groups sign-up route
 loginRouter.post('/signup/groups', [
     // express validator statements and checks
     oneOf([
@@ -193,7 +192,8 @@ loginRouter.post('/signup/groups', [
     }
 );
 
-loginRouter.post('/login/groups', [  
+// Groups log-in route
+loginRouter.post('/login/groups', [
     // express validator statements and checks
     oneOf([
         check("username").isLength({"min" : 5}).withMessage("username must have a length of at least 5 characters"),
@@ -218,15 +218,14 @@ loginRouter.post('/login/groups', [
     }
 );
 
+// Groups log-out route
 loginRouter.delete('/logout/groups/current', groupIsLoggedIn, (req, res) => {
     let loggedOut = null;
-    if (req.user !== undefined) loggedOut = {"profileID" : req.user.ProfileID, "user" : req.user.User};
+    if (req.user !== undefined) loggedOut = {"profileID" : req.user.profileID, "user" : req.user.user};
     req.logout((err) => {
         if (err) return next(err);
     });
-    if (loggedOut != null) res.json({"correctly logged-out group" : loggedOut});
-    //res.redirect('/');
-    res.end();
+    if (loggedOut != null) return res.status(200).json({"correctly logged-out group" : loggedOut});
 });
 
 /* ===== Modules Exports ===== */

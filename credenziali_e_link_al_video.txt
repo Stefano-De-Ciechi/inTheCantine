@@ -1,0 +1,29 @@
+video:  al minuto 7 circa, quello che si sente non è il file audio (che non viene preso nella registrazione)
+	ma un rumore di sottofondo; qualche secondo più tardi sono stato interrotto durante la registrazione,
+	perciò la parte dal minuto 7:10 è stata registrata in un secondo momento (ecco perchè il tono di voce è leggermente più basso).		
+	Mi scuso per l'inconveniente.
+
+	link al video: 
+
+Credenziali utente:
+
+===== Musicisti =====
+
+username:	elia.panic
+password:	password
+
+username:	vale.espo@libero.it
+password:	password
+
+username:	teo.salo
+password:	password
+
+Solamente il musicista "Valentina Esposito" ha pubblicato una demo musicale (per mantenere le dimensioni dei file basse) 
+
+===== Gruppi =====
+
+username:	anb2022
+passowrd:	password
+
+username:	mesbacon
+password:	password

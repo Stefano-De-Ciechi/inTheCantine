@@ -4,78 +4,394 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
-    
+
     <link href="./css/index.css" rel="stylesheet">
+
+    <!-- Javascript files import -->
+    <script defer src="./js/templates/buttons.js"></script>
+    <script defer src="./js/templates/homePage.js"></script>
+    <script defer src="./js/templates/announcementsPage.js"></script>
+    <script defer src="./js/templates/groupsPage.js"></script>
+    <script defer src="./js/templates/musiciansPage.js"></script>
+    <script defer src="./js/templates/profilePage.js"></script>
+    <script defer src="./js/api.js"></script>
+    <script defer src="https://cdn.rawgit.com/visionmedia/page.js/master/page.js"></script>
+    <script defer src="./js/app.js"></script>
+    <script defer src="./js/main.js"></script>
 
     <title> inTheCantine </title>
   </head>
   <body>
-    
-    <!-- Navbar -->
-    <nav class="navbar">
-      <div class="container-fluid no-padding">
-          <a class="navbar-brand no-padding no-margin">inTheCantine</a>
 
-          <div class="navbar-nav">
-
-            <div class="btn-toolbar">
-              <button id="" type="button" class="btn btn-round-black"> il tuo profilo </button>
-              <button id="" type="button" class="btn btn-round-black"> esci </button>
+    <header>
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="container-fluid no-padding">
+                <a id="brand-name" href="/home" class="navbar-brand no-padding no-margin">inTheCantine</a>
+                <div class="navbar-nav">
+                    <div id="navbar-btn-toolbar" class="btn-toolbar">
+                        <button id="login-btn" type="button" class="btn btn-round-black" data-bs-toggle="modal" data-bs-target="#login-modal">Accedi</button>
+                    </div>
+                </div>
             </div>
+        </nav>
+    </header>
 
-              <!--<div class="row no-padding no-margin">
-                <div class="col-xs-2 no-padding no-margin">
-                  <button id="loginBtn" type="button" class="btn"> il tuo profilo </button>
-                </div>
-                <div class="col-xs-2 no-padding no-margin">
-                  <button id="loginBtn" type="button" class="btn"> esci </button>
-                  <button id="loginBtn" type="button" class="btn" data-toggle="modal" data-target="#login-modal"> entra </button>
-                </div>
-              </div> -->
-          </div>
-      </div>
-    </nav>
-
+    <!-- text under navbar -->
     <div id="home-description-div" class="container-fluid no-padding no-margin">
         Dedicato a chi ama la musica. A chi vuole suonare. A chi vuole divertirsi.
     </div>
 
-    <div id="home-filters" class="container-fluid">
-        <button type="button" class="btn home-filter-btn"> Musicisti </button>
-        <button type="button" class="btn home-filter-btn"> Gruppi </button>
-        <button type="button" class="btn home-filter-btn"> Annunci </button>
-    </div>
+    <main>
 
-    <div class="container-fluid no-padding">
-        <img class="img-fluid" src="./media/images/inTheCantine-bg-greyScale.jpg">
-    </div>
-
-    <!-- Modal -->
-    <div class="modal fade" id="login-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            ...
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Save changes</button>
-          </div>
+        <!-- Home Filters -->
+        <div id="home-categories" class="container-fluid">
+            <button id="musicians-page-btn" type="button" class="btn home-categories-btn"> Musicisti </button>
+            <button id="groups-page-btn" type="button" class="btn home-categories-btn"> Gruppi </button>
+            <button id="announcements-page-btn" type="button" class="btn home-categories-btn"> Annunci </button>
         </div>
-      </div>
+
+        <!-- App container, which is the dynamic part of the page -->
+        <div id="app-container">
+
+        </div>
+    </main>
+
+    <!-- List of Modals used in the page -->
+    <div id="modals-container">
+
+        <!-- Invisible button used to toggle some modals -->
+        <button id="modals-toggle-button" type="button" data-bs-toggle="modal" data-bs-target="#musician-modal" hidden> Toggle forms </button>
+
+        <!-- Modal + Login Form -->
+        <div class="modal fade" id="login-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div id="login-modal-content" class="modal-content">
+                <div class="modal-header no-border row">
+
+                    <div class="col-sm-12 container-fluid">
+                        <button class="btn btn-round-white form-type"> Accesso </button>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <button class="btn btn-round-white form-type-selected" id="login-form-type-musician" type="button" aria-selected="true"> Musicista </button>
+                    </div>
+                    <div class="col-sm-6">
+                        <button class="btn btn-round-white" id="login-form-type-group" type="button" aria-selected="false">Gruppo</button>
+                    </div>
+
+                </div>
+                <div class="modal-body">
+
+                    <form id="login-form" name="login-form" method="post">
+                        <input type="hidden" id="login-form-user-type" value="MUSICIAN">
+                        <div class="mb-3">
+                            <label for="login-form-username-email" class="form-label">username o email</label>
+                            <input type="text" minlength="5" class="form-control" id="login-form-username-email" aria-describedby="username-validity" required>
+                            <div id="username-validity" class="invalid-feedback">  </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="login-form-password" class="form-label">password</label>
+                            <input type="password" minlength="6" class="form-control" id="login-form-password" aria-describedby="password-validity" required>
+                            <div id="password-validity" class="invalid-feedback"> </div>
+                        </div>
+
+                        <div class="modal-footer no-border">
+                            <a href="" data-bs-toggle="modal" data-bs-target="#signup-modal"> Non hai un account? Iscriviti! </a>
+                            <button id="login-form-submit" type="submit" class="btn btn-round-black">Entra</button>
+                        </div>
+                    </form>
+
+                </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal + Sign-Up Form -->
+        <div class="modal fade" id="signup-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div id="signup-modal-content" class="modal-content">
+                <div class="modal-header no-border row">
+
+                    <div class="col-sm-12 container-fluid">
+                        <button class="btn btn-round-white form-type"> Creazione Account </button>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <button class="btn btn-round-white form-type-selected" id="signup-form-type-musician" type="button" aria-selected="true"> Musicista </button>
+                    </div>
+                    <div class="col-sm-6">
+                        <button class="btn btn-round-white" id="signup-form-type-group" type="button" aria-selected="false">Gruppo</button>
+                    </div>
+
+                </div>
+                <div class="modal-body">
+
+                    <form id="signup-form" name="signup-form" method="post">
+                        <input type="hidden" id="signup-form-user-type" value="MUSICIAN">
+                        <div class="mb-3">
+                            <label for="signup-form-username-email" class="form-label">username o email</label>
+                            <input type="text" minlength="5" class="form-control" id="signup-form-username-email" aria-describedby="emailHelp" required>
+                            <!-- <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div> -->
+                        </div>
+                        <div class="mb-3">
+                            <label for="signup-form-password" class="form-label">password</label>
+                            <input type="password" minlength="6" class="form-control" id="signup-form-password" required>
+                        </div>
+
+                        <div class="modal-footer no-border">
+                            <button id="signup-form-submit" type="submit" class="btn btn-round-black">Iscriviti</button>
+                        </div>
+                    </form>
+
+                </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal to create or modify a Musician profile -->
+        <div class="modal fade" id="musician-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div id="musician-modal-content" class="modal-content">
+                <div class="modal-header no-border row">
+
+                    <div class="col-sm-12">
+                        <button class="btn btn-round-white form-type-selected" id="musician-profile-creation-title" type="button" aria-selected="true">Creazione profilo Musicista </button>
+                    </div>
+
+                </div>
+                <div class="modal-body">
+                    <form id="musician-form" class="row g-3" request-type="post">
+                        <div class="col-md-4">
+                            <label for="musician-name" class="form-label">Nome *</label>
+                            <input type="text" class="form-control" id="musician-name" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="musician-surname" class="form-label">Cognome *</label>
+                            <input type="text" class="form-control" id="musician-surname" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="musician-age" class="form-label">Età *</label>
+                            <input type="number" min="14" max="120" class="form-control" id="musician-age" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="musician-city" class="form-label">Città *</label>
+                            <input type="text" class="form-control" id="musician-city" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="musician-province" class="form-label">Provincia *</label>
+                            <input type="text" class="form-control" id="musician-province" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="musician-contacts" class="form-label">Contatti *</label>
+                            <input type="text" class="form-control" id="musician-contacts" placeholder="es. telefono, indirizzo e-mail, account social" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="musician-musical-tastes" class="form-label">Gusti Musicali *</label>
+                            <input type="text" class="form-control" id="musician-musical-tastes" placeholder="es. Indie Rock, Hip Hop, Rap" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="musician-instruments" class="form-label">Strumenti *</label>
+                            <input type="text" class="form-control" id="musician-instruments" placeholder="es. Chitarra Elettrica, Batteria, Software Ableton" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="musician-description" class="form-label">Descrizione</label>
+                            <textarea class="form-control" id="musician-description" placeholder="es. Da quanto suoni uno strumento, esperienze passate con altri gruppi ..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label for="musician-available-locations" class="form-label">Posti per suonare</label>
+                            <input type="text" class="form-control" id="musician-available-locations" placeholder="es. Cantina insonorizzata oppure piccolo studio di registrazione">
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="musician-available-for-hire">
+                            <label class="form-check-label" for="musician-available-for-hire">
+                                Disponibile per ingaggi
+                            </label>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="musician-profile-picture" class="form-label">Scegli una foto profilo!</label>
+                            <input type="file" accept=".jpg,.jpeg,.png" class="form-control" id="musician-profile-picture">
+                        </div>
+
+                        <div class="col-12">
+                            <button id="musician-profile-submit" type="submit" class="btn btn-round-black">Registrami</button>
+                        </div>
+                    </form>
+
+                </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal to create or modify a Group profile -->
+        <div class="modal fade" id="group-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div id="group-modal-content" class="modal-content">
+                <div class="modal-header no-border row">
+
+                    <div class="col-sm-12">
+                        <button class="btn btn-round-white form-type-selected" id="group-profile-creation-title" type="button" aria-selected="true">Creazione profilo Gruppo </button>
+                    </div>
+
+                </div>
+                <div class="modal-body">
+                    <form id="group-form" class="row g-3" request-type="post">
+                        <div class="col-12">
+                            <label for="group-name" class="form-label">Nome del gruppo *</label>
+                            <input type="text" class="form-control" id="group-name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="group-city" class="form-label">Città *</label>
+                            <input type="text" class="form-control" id="group-city" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="group-province" class="form-label">Provincia *</label>
+                            <input type="text" class="form-control" id="group-province" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="group-contacts" class="form-label">Contatti *</label>
+                            <input type="text" class="form-control" id="group-contacts" placeholder="es. telefono, indirizzo e-mail, account social" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="group-musical-genres" class="form-label">Generi Musicali *</label>
+                            <input type="text" class="form-control" id="group-musical-genres" placeholder="es. Indie Rock, Hip Hop, Rap" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="group-components" class="form-label">Componenti del gruppo</label>
+                            <textarea class="form-control" id="group-components" placeholder="es. Marco - Chitarra Elettrica, Luigi - Batteria, Francesco - Batteria, Lucia - Cantante"> </textarea>
+                        </div>
+                        <div class="col-12">
+                            <label for="group-description" class="form-label">Descrizione</label>
+                            <textarea class="form-control" id="group-description" placeholder="es. esperienze passate ..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label for="group-time-table" class="form-label">Tabella Orari</label>
+                            <textarea class="form-control" id="group-time-table" placeholder="es. Tutti i Giovedì sera ..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label for="group-available-locations" class="form-label">Posti per suonare</label>
+                            <input type="text" class="form-control" id="group-available-locations" placeholder="es. Cantina insonorizzata oppure piccolo studio di registrazione">
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="group-available-for-hire">
+                            <label class="form-check-label" for="group-available-for-hire">
+                                Disponibile per ingaggi
+                            </label>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="group-profile-picture" class="form-label">Scegli una foto profilo!</label>
+                            <input type="file" accept=".jpg,.jpeg,.png" class="form-control" id="group-profile-picture">
+                        </div>
+
+                        <div class="col-12">
+                            <button id="group-profile-submit" type="submit" class="btn btn-round-black">Registrami</button>
+                        </div>
+                    </form>
+
+                </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal to upload a new Demo File -->
+        <div class="modal fade" id="demos-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div id="demos-modal-content" class="modal-content">
+                    <div class="modal-header no-border row">
+                        <div class="col-sm-12">
+                            <button class="btn btn-round-white form-type-selected" id="demos-title" type="button" aria-selected="true">Carica una nuova Demo</button>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <form id="demos-form" class="row g-3">
+                            <div class="col-12">
+                                <label for="demo-title" class="form-label">Titolo *</label>
+                                <input type="text" class="form-control" id="demo-title" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="demo-description" class="form-label">Descrizione</label>
+                                <textarea type="text" class="form-control" id="demo-description"> </textarea>
+                            </div>
+                            <div class="col-12">
+                                <label for="demo-file-path" class="form-label">Seleziona il file audio</label>
+                                <input type="file" accept=".mp3,.wav,.m4a" class="form-control" id="demo-file-path" required>
+                            </div>
+
+                            <div class="col-12">
+                                <button id="demos-submit" type="submit" class="btn btn-round-black">Carica Demo</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal to publish a new Announcement -->
+        <div class="modal fade" id="announcements-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div id="announcements-modal-content" class="modal-content">
+                    <div class="modal-header no-border row">
+                        <div class="col-sm-12">
+                            <button class="btn btn-round-white form-type-selected" id="announcements-title" type="button" aria-selected="true">Pubblica un nuovo Annuncio</button>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <form id="announcements-form" class="row g-3">
+                            <div class="col-12">
+                                <label for="announcement-type" class="form-label">Tipo di annuncio *</label>
+                                <select id="announcement-type" class="form-control form-select form-select-sm form-label" aria-label=".form-select-sm example">
+                                    <!-- options for the select are changed dinamically by Javascript (based on the type of user) -->
+                                    <!--
+                                    <option value="EVENT" selected>Evento</option>
+                                    <option value="G_SEARCH_M">Gruppo cerca membri</option>
+                                    <option value="M_SEARCH_M">Musicista cerca altri Musicisti</option>
+                                    <option value="GROUP_CREATION">Creazione di un Gruppo</option>
+                                    -->
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="announcement-title" class="form-label">Titolo *</label>
+                                <input type="text" class="form-control" id="announcement-title" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="announcement-description" class="form-label">Descrizione</label>
+                                <textarea type="text" class="form-control" id="announcement-description"> </textarea>
+                            </div>
+                            <div class="col-12">
+                                <label for="announcement-city" class="form-label">Città *</label>
+                                <input type="text" class="form-control" id="announcement-city" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="announcement-province" class="form-label">Provincia *</label>
+                                <input type="text" class="form-control" id="announcement-province" required>
+                            </div>
+
+                            <div class="col-12">
+                                <button id="demos-submit" type="submit" class="btn btn-round-black">Pubblica Annuncio</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-
-    
-    <!-- Optional JavaScript -->
-    <!-- Popper.js, then Bootstrap JS -->
+    <!-- Bootstrap Javascript Version 5.2.1 import -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
   </body>
 </html>

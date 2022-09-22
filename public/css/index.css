@@ -1,8 +1,7 @@
 @font-face {
     font-family: 'Alfa Slab One';
     src: url('../media/fonts/AlfaSlabOne-Regular.ttf');
-  }
-
+}
 
 nav {
     background-color: white;
@@ -47,40 +46,10 @@ body {
     font-family: 'Alfa Slab One';
     font-style: normal;
     font-weight: 400;
-    /*font-size: 20px;*/
     line-height: 27px;
-    display: flex;
+    display: inline-block;
     align-items: center;
     text-align: center;
-}
-
-/* not working, apparently to make it work I should use !important at the end of every attribute */
-.btn-round-black:hover {
-    background-color: rgb(68, 67, 67);
-    color: white;
-}
-
-/*
-#loginBtn, #loginBtn:focus {
-    border-radius: 32px;
-    color: white;
-    background-color: black;
-    border-color: black;
-
-    font-family: 'Alfa Slab One';
-    font-style: normal;
-    font-weight: 400;
-    font-size: 20px;
-    line-height: 27px;
-    display: flex;
-    align-items: center;
-    text-align: center;
-}
-*/
-
-#loginBtn:hover {
-    background-color: rgb(68, 67, 67);
-    color: white;
 }
 
 .no-padding {
@@ -93,15 +62,20 @@ body {
     margin-right: 0px;
 }
 
-#home-filters {
+.no-border {
+    border-bottom: 0px;
+    border-top: 0px;
+}
+
+#home-categories {
     margin-top: 3vh;
     margin-bottom: 3vh;
     display: flex;
     justify-content: center;
-    
+
 }
 
-.home-filter-btn {
+.home-categories-btn {
     color: black;
     background-color: white;
     border-radius: 32px;
@@ -120,16 +94,104 @@ body {
     text-align: center;
 }
 
-.home-filter-btn:hover {
+.home-categories-btn:hover {
     background-color: rgb(68, 67, 67);
     color: white;
 }
 
-.home-filter-btn:active {
+.home-categories-btn:active {
     background-color: rgb(68, 67, 67);
     color: white;
 }
 
 .img-fluid {
     border-radius: 10px;
+}
+
+#form-type-musician:active {
+    text-decoration: underline;
+}
+
+#form-type-group:active {
+    text-decoration: underline;
+}
+
+.btn-round-white {
+    border-radius: 40px;
+    color: black;
+    background-color: white;
+    border-color: white;
+
+    font-family: 'Alfa Slab One';
+    font-style: normal;
+    font-weight: 400;
+    line-height: 27px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+}
+
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.form-label {
+    color: black;
+    font-family: 'Alfa Slab One';
+    font-style: normal;
+    font-weight: 400;
+}
+
+.form-label:hover {
+    color: black;
+}
+
+#musicians-filters {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    border-top: 2px;
+    border-left: 2px;
+    border-right: 2px;
+    border-bottom: 2px;
+    border-radius: 40px;
+    border-color: black;
+}
+
+.list-row {
+    margin-top: 24px;
+}
+
+.card {
+    max-width: 60vw;
+    margin-top: 24px;
+}
+
+.form-type-selected {
+    font-family: 'Alfa Slab One';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 30px;
+    text-decoration: underline;
+}
+
+#musicians-filters {
+    padding-top: 0px;
+}
+
+.profile-page-body {
+    margin-top: 50px;
+}
+
+#profile-tabs {
+    margin-top: 24px;
+}
+
+#profile-tabs-content {
+    margin-top: 20px;
+}
+
+.tab-pane {
+    margin-left: 20px;
 }

@@ -2,7 +2,7 @@
 
 const sqlite = require('sqlite3');
 
-// TODO should each function do a check on his input?
+// this class interacts with the Application Data part of the database
 class ApplicationDAO {
     constructor() {
         this.DBSOURCE = './data/applicationData.db';
@@ -26,7 +26,7 @@ class ApplicationDAO {
             this.db.run(sql, [musician.profileID, musician.name, musician.surname, musician.age, musician.city, musician.province, musician.contacts, musician.musicalTastes, musician.instruments, musician.description, musician.availableForHire, musician.availableLocations, musician.profilePicturePath], function (err) {
                 if (err) return reject({"error" : err});
                 return resolve({"profileID" : this.lastID});
-            });            
+            });
         });
     }
 
@@ -74,7 +74,7 @@ class ApplicationDAO {
             this.db.run(sql, [group.profileID, group.name, group.city, group.province, group.contacts, group.musicalGenres, group.musiciansList, group.description, group.timeTable, group.availableForHire, group.availableLocations, group.profilePicturePath], function (err) {
                 if (err) return reject({"error" : err});
                 return resolve({"profileID" : this.lastID});
-            });            
+            });
         });
     }
 
@@ -99,7 +99,7 @@ class ApplicationDAO {
                 return resolve(row);
             });
         });
-    } 
+    }
 
     // retrieve a Group from the database given it's ProfileID
     getGroupByID(profileID) {
@@ -112,28 +112,16 @@ class ApplicationDAO {
             });
         });
     }
-    
+
     /* ===== Announcements ===== */
 
     // create a new Announcement entry in the database
     insertNewAnnouncement(announcement) {
         return new Promise((resolve, reject) => {
-            const sql = "INSERT INTO Announcements (AuthorID, AuthorType, AnnouncementType, PublishDate, Description, City, Province) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            this.db.run(sql, [announcement.authorID, announcement.authorType, announcement.announcementType, announcement.publishDate, announcement.description, announcement.city, announcement.province], function(err) {
+            const sql = "INSERT INTO Announcements (AuthorID, AuthorType, AnnouncementType, PublishDate, Title, Description, City, Province) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            this.db.run(sql, [announcement.authorID, announcement.authorType, announcement.announcementType, announcement.publishDate, announcement.title, announcement.description, announcement.city, announcement.province], function(err) {
                 if (err) return reject({"error" : err});
                 return resolve({"announcementID" : this.lastID});
-            });
-        });
-    }
-
-    // modify an Announcement given it's ID --> AuthorID, AuthorType and AnnouncementType properties cannot be changed
-    updateAnnouncement(announcementID, announcement) {
-        return new Promise((resolve, reject) => {
-            const sql = "UPDATE Announcements SET PublishDate = ?, Description = ?, City = ?, Province = ? WHERE ID = ?";
-            this.db.run(sql, [announcement.publishDate, announcement.description, announcement.city, announcement.province, announcementID], function (err) {
-                if (err) return reject({"error" : err});
-                console.log("changes made:", this.changes);
-                return resolve({"changes" : this.changes});
             });
         });
     }
@@ -148,10 +136,6 @@ class ApplicationDAO {
             });
         });
     }
-
-    // TODO add the removal of an announcement given it's AuthorID and AuthorType ???
-
-    // TODO when listing all announcements maybe add more informations on the author other than type and ID (it is complicated because Musicians have Name and Surname while Groups only have Name)
 
     // list all Announcements in the database
     getAllAnnouncements() {
@@ -212,77 +196,6 @@ class ApplicationDAO {
             });
         });
     }
-
-    /* ===== Membership Requests ===== */
-
-    // insert a new MembershipRequest entry in the database
-    insertNewMembershipRequest(membershipRequest) {
-        return new Promise((resolve, reject) => {
-            const sql = "INSERT INTO MembershipRequests (MusicianID, GroupID, Description, PublishDate) VALUES (?, ?, ?, ?)";
-            this.db.run(sql, [membershipRequest.musicianID, membershipRequest.groupID, membershipRequest.description, membershipRequest.publishDate], function(err) {
-                if (err) return reject({"error" : err});
-                return resolve({"membershipRequestID" : this.lastID});
-            });            
-        });
-    }
-
-    // remove a MembershipRequest from the database given it's ID
-    removeMembershipRequest(membershipRequestID) {
-        return new Promise((resolve, reject) => {
-            const sql = "DELETE FROM MembershipRequests WHERE ID = ?";
-            this.db.run(sql, [membershipRequestID], function(err) {
-                if (err) return reject({"error" : err});
-                return resolve({"changes" : this.changes});
-            });
-        });
-    }
-
-    // list all MemershipRequests sent by a Musician given it's ID
-    getAllMembershipRequestsByMusicianID(musicianID) {
-        return new Promise((resolve, reject) => {
-            const sql = "SELECT * FROM MembershipRequests WHERE MusicianID = ?";
-            this.db.all(sql, [musicianID], function (err, row) {
-                if (err) return reject({"error" : err});
-                if (row === undefined) return resolve({"error" : `No MembershipRequests found for Musician with ID (${musicianID})`});
-                return resolve(row);
-            });
-        });
-    }
-
-    // list all MembershipRequests received by a Group given it's ID
-    getAllMembershipRequestsByGroupID(groupID) {
-        return new Promise((resolve, reject) => {
-            const sql = "SELECT * FROM MembershipRequests WHERE GroupID = ?";
-            this.db.all(sql, [groupID], function (err, row) {
-                if (err) return reject({"error" : err});
-                if (row === undefined) return resolve({"error" : `No MembershipRequests found for Group with ID (${groupID})`});
-                return resolve(row);
-            });
-        });
-    }
 }
-
-/*
-// for testing only
-async function main() {
-    let db = new ApplicationDAO();
-    //let res = await db.getMusicianByID(1);
-    //let res = await db.updateMusician(8, {"name" : "Stefano", "surname" : "De Ciechi", "age" : "21", "city" : "Magenta", "province" : "Milano", "contacts" : "33420602", "musicalTastes" : "Indie Rock", "instruments" : "Basso Elettrico", "description" : null, "availableForHire" : "no", "availableLocations" : "cantina attrezzata", "profilePicturePath" : "/images/TROVA_UN_NUOVO_NOME.jpg"});
-    //let res = await db.getAllGroups();
-    //let res = await db.getAllAnnouncements();
-    //let res = await db.getAllProfileDemos(8, "MUSICIAN");
-    //let res = await db.getAllMembershipRequestsByMusicianID(100);
-    //let res = await db.getAllMembershipRequestsByGroupID(1);
-    let res = await db.updateAnnouncement(3, {
-        "publishDate": "2022-09-07",
-        "description": "festa con musica dal vivo in villa",
-        "city": "Marcallo",
-        "province": "Milano"
-    });
-    console.log(res);
-}
-
-main();
-*/
 
 module.exports = ApplicationDAO;

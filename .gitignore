@@ -5,3 +5,6 @@ PROCEDIMENTO.txt
 public/media/images/*
 public/media/demos/*
 public/media/fonts/*
+backup
+*.mp4
+*.odp

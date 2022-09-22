@@ -153,28 +153,6 @@ const updateOrInsertGroupChecks = checkSchema({
 });
 
 const insertDemoFileChecks = checkSchema({
-    /*"authorID" : {
-        "in" : ["body"],
-        "exists" : true,
-        "isNumeric" : {
-            "errorMessage" : "authorID must be a numeric value"
-        },
-        "errorMessage" : "req.body must contain the field 'authorID'"
-    },
-    "authorType" : {
-        "in" : ["body"],
-        "exists" : true,
-        "isIn" : {
-            "options" : [["GROUP", "MUSICIAN"]],
-            "errorMessage" : "authorType must be either GROUP or MUSICIAN"
-        },
-        "errorMessage" : "req.body must contain the field 'authorType'"
-    },
-    "publishDate" : {
-        "in" : ["body"],
-        "exists" : true,
-        "errorMessage" : "req.body must contain the field 'publishDate'"
-    },*/
     "title" : {
         "in" : ["body"],
         "exists" : true,
@@ -193,37 +171,20 @@ const insertDemoFileChecks = checkSchema({
 });
 
 const insertOrUpdateAnnouncementChecks = checkSchema({
-    /*"authorID" : {
-        "in" : ["body"],
-        "exists" : true,
-        "isNumeric" : {
-            "errorMessage" : "authorID must be a numeric value"
-        },
-        "errorMessage" : "req.body must contain the field 'authorID'"
-    },
-    "authorType" : {
-        "in" : ["body"],
-        "exists" : true,
-        "isIn" : {
-            "options" : [["GROUP", "MUSICIAN"]],
-            "errorMessage" : "authorType must be either GROUP or MUSICIAN"
-        },
-        "errorMessage" : "req.body must contain the field 'authorType'"
-    },*/
     "announcementType" : {
         "in" : ["body"],
         "exists" : true,
         "isIn" : {
-            "options" : [["G_SEARCH_M", "G_CREATION", "EVENT"]],
+            "options" : [["G_SEARCH_M", "M_SEARCH_M", "G_CREATION", "EVENT"]],
             "errorMessage" : "authorType must be either G_SEARCH_M, G_CREATION or EVENT"
         },
         "errorMessage" : "req.body must contain the field 'announcementType'"
     },
-    /*"publishDate" : {
+    "title" : {
         "in" : ["body"],
         "exists" : true,
-        "errorMessage" : "req.body must contain the field 'publishDate'"
-    },*/
+        "errorMessage" : "req.body must contain the field 'title'"
+    },
     "description" : {
         "in" : ["body"],
         "exists" : true,
@@ -254,45 +215,38 @@ const insertMembershipRequestChecks = checkSchema({
         "in" : ["body"],
         "exists" : true,
         "errorMessage" : "req.body must contain the field 'description'"
-    }/*,
-    "publishDate" : {
-        "in" : ["body"],
-        "exists" : true,
-        "errorMessage" : "req.body must contain the field 'publishDate'"
-    }*/
+    }
 });
 
 /* ===== Custom Functions ===== */
+
+// return current date in the format yyyy-mm-dd
 function getCurrentDate() {
     return new Date(Date.now()).toISOString().split('T')[0];
 }
 
+// filtering function for the results of a query
 function filterData(paramsArray, data) {
-    
+
     // if no params just skip the filtering process
     if (paramsArray.length == 0) return data;
-    
+
     // the data returned from the database can get filtered multiple times, based on all the valid parameters found in req.query
-    for (let filterParam in paramsArray) {    
+    for (let filterParam in paramsArray) {
         data = data.filter(row => {
-            if (row[filterParam] === undefined) return true;    // skip wrong query parameters that do not exists 
+            if (row[filterParam] === undefined) return true;    // skip wrong query parameters that do not exists
             return row[filterParam].toLowerCase().includes(paramsArray[filterParam].toLowerCase());
         });
-    }    
+    }
     return data;
 }
-
-/* ===== Custom Routes ===== */
-// TODO add filters server-side with parametric queries??
-
-// TODO maybe create a router for every entity? too complicated??
 
 /* ===== Musicians Routes ===== */
 
 // list all Musicians, also filtering through req.query is possible, for example /api/musicians?Province=Milano&Instruments=Basso+Elettrico
 appDataRouter.get('/musicians', [
         // using req.query to add filtering methods
-        // TODO make req.params valid even if they are not capitalized (in the database all attributes are capitalized)
+        // filters are all optional and can be combined
         check("City").optional(true).isString().withMessage("City must be a string"),
         check("Province").optional(true).isString().withMessage("Province must be a string"),
         check("MusicalTastes").optional(true).isString().withMessage("MusicalTastes must be a string"),
@@ -307,11 +261,11 @@ appDataRouter.get('/musicians', [
         try {
             data = await appDataDAO.getAllMusicians();    // musicians data will not get processed (profileID will be needed by the application)
             if (data.error) return res.status(200).json({"message" : "no musicians found"});     // no content found
-            
+
             // apply filters
             data = filterData(req.query, data);
-            
-            return res.status(200).json({data});
+
+            return res.status(200).json(data);
         } catch(err) {
             return res.status(500).json({"error" : err});
         }
@@ -322,7 +276,7 @@ appDataRouter.get('/musicians', [
 appDataRouter.get('/musicians/:musicianID', [check("musicianID").exists().withMessage("a musicianID is required").isNumeric().withMessage("musicianID must be a number")], async (req, res) => {
     const validationErrors = validationResult(req);
     if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
-    
+
     let data;
     try {
         data = await appDataDAO.getMusicianByID(req.params.musicianID);
@@ -345,18 +299,18 @@ appDataRouter.post('/musicians', musicianIsLoggedIn, [
         }
     })
 ], async (req, res) => {
-    const validationErrors = validationResult(req);
-    if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
+      const validationErrors = validationResult(req);
+      if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
 
-    let data;
-    try {
-        data = await appDataDAO.insertNewMusician(req.body);
-        if (data.error) return res.status(200).json({"message" : data.error});
-        return res.status(200).json({"profileID" : data.profileID});
-    } catch (err) {
-        return res.status(500).json({"error" : err});
-    }
-}
+      let data;
+      try {
+          data = await appDataDAO.insertNewMusician(req.body);
+          if (data.error) return res.status(200).json({"message" : data.error});
+          return res.status(200).json({"profileID" : data.profileID});
+      } catch (err) {
+          return res.status(500).json({"error" : err});
+      }
+   }
 );
 
 // update a Musician's Profile given it's ID and the new values in the body (only authenticated Musicians)
@@ -366,7 +320,7 @@ appDataRouter.put('/musicians', musicianIsLoggedIn, [updateOrInsertMusicianCheck
 
     let data;
     try {
-        data = await appDataDAO.updateMusician(req.user.ProfileID, req.body);
+        data = await appDataDAO.updateMusician(req.user.profileID, req.body);
         if (data.error) return res.status(200).json({"message" : data.error});
         return res.status(200).json({"total changes" : data.changes});
     } catch (err) {
@@ -379,7 +333,6 @@ appDataRouter.put('/musicians', musicianIsLoggedIn, [updateOrInsertMusicianCheck
 // list all Groups
 appDataRouter.get('/groups', [
         // using req.query to add filtering methods
-        // TODO make req.params valid even if they are not capitalized (in the database all attributes are capitalized)
         check("City").optional(true).isString().withMessage("City must be a string"),
         check("Province").optional(true).isString().withMessage("Province must be a string"),
         check("MusicalGenres").optional(true).isString().withMessage("MusicalTastes must be a string"),
@@ -393,11 +346,11 @@ appDataRouter.get('/groups', [
         try {
             data = await appDataDAO.getAllGroups();    // groups data will not get processed (profileID will be needed by the application)
             if (data.error) return res.status(200).json({"message" : "no musicians found"});     // no content found
-            
+
             // apply filters
             data = filterData(req.query, data);
-            
-            return res.status(200).json({data});
+
+            return res.status(200).json(data);
         } catch(err) {
             return res.status(500).json({"error" : err});
         }
@@ -431,18 +384,18 @@ appDataRouter.post('/groups', groupIsLoggedIn, [
         }
     })
 ], async (req, res) => {
-    const validationErrors = validationResult(req);
-    if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
+      const validationErrors = validationResult(req);
+      if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
 
-    let data;
-    try {
-        data = await appDataDAO.insertNewGroup(req.body);
-        if (data.error) return res.status(200).json({"message" : data.error});
-        return res.status(200).json({"profileID" : data.profileID});
-    } catch (err) {
-        return res.status(500).json({"error" : err});
-    }
-}
+      let data;
+      try {
+          data = await appDataDAO.insertNewGroup(req.body);
+          if (data.error) return res.status(200).json({"message" : data.error});
+          return res.status(200).json({"profileID" : data.profileID});
+      } catch (err) {
+          return res.status(500).json({"error" : err});
+      }
+   }
 );
 
 // update a Group's Profile given it's ID and the new values in the body (only authenticated Groups)
@@ -452,7 +405,7 @@ appDataRouter.put('/groups', groupIsLoggedIn, [updateOrInsertGroupChecks], async
 
     let data;
     try {
-        data = await appDataDAO.updateGroup(req.user.ProfileID, req.body);
+        data = await appDataDAO.updateGroup(req.user.profileID, req.body);
         if (data.error) return res.status(200).json({"message" : data.error});
         return res.status(200).json({"total changes" : data.changes});
     } catch (err) {
@@ -463,14 +416,13 @@ appDataRouter.put('/groups', groupIsLoggedIn, [updateOrInsertGroupChecks], async
 /* ===== Demo Files Routes ===== */
 
 // retrieve all the demos uploaded by a Musician or a Group given their profileID and type (MUSICIAN or GROUP)
-//appDataRouter.get('/demos/:profileType/:profileID', [], async (req, res) => {
-appDataRouter.get('/demos', [   // a parametric query is used
+appDataRouter.get('/demos', [   // a parametric query must be used
         check("authorType").exists().withMessage("an authorType is required").toUpperCase().isIn(["GROUP", "MUSICIAN"]).withMessage("authorType must be either GROUP or MUSICIAN"),
         check("authorID").exists().withMessage("an authorID must be passed").isNumeric().withMessage("authorID must be a number")
     ], async (req, res) => {
         const validationErrors = validationResult(req);
         if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
-        
+
         let data;
         try {
             data = await appDataDAO.getAllProfileDemos(req.query.authorID, req.query.authorType.toUpperCase());
@@ -511,7 +463,7 @@ appDataRouter.delete('/demos/:demoID', musicianOrGroupIsLoggedIn, [
     ], async (req, res) => {
         const validationErrors = validationResult(req);
         if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
-        
+
         // a demo file can be deleted only by it's Author, so first retrieve the list of all demos of the authenticated user and check if the demo to be deleted is present or not
         // another way is to create a function in the applicationDataDAO called getDemoByID, and check if it's authorID and authorType correspond to the ones of the authenticated user
         let userDemos;
@@ -532,12 +484,11 @@ appDataRouter.delete('/demos/:demoID', musicianOrGroupIsLoggedIn, [
             }
         }
 
-
         if (!found) return res.status(401).json({"error" : "not authorized to remove the demo of another user"});
-        
+
         let data;
         try {
-            fs.unlinkSync(__dirname + '/../public' + demoPath);       // deletes the audio file in the /public/media/demos folder, /../public is added here because __dirname is the /routes folder
+            fs.unlinkSync(__dirname + '/../public' + demoPath);       // deletes the audio file in the /public/media/demos folder, /../public is added here because __dirname points to the /routes folder
             data = await appDataDAO.removeDemo(req.params.demoID);
             if (data.error) return res.status(200).json({"message" : data.error});
             return res.status(200).json({"changes" : data.changes});
@@ -555,22 +506,22 @@ appDataRouter.get('/announcements', [
         check("authorType").optional(true).isIn(["GROUP", "MUSICIAN"]).withMessage("authorType must be either GROUP or MUSICIAN"),
         check("City").optional(true).isString().withMessage("City must be a string"),
         check("Province").optional(true).isString().withMessage("Province must be a string"),
-        check("AnnouncementType").optional(true).isString().withMessage("AnnouncementType must be a string")
+        check("AnnouncementType").optional(true).isIn(['', 'EVENT', 'G_SEARCH_M', 'M_SEARCH_M', 'G_CREATION']).withMessage("AnnouncementType must be a valid type (EVENT, G_SEARCH_M, M_SEARCH_M, G_CREATION)")
     ], async (req, res) => {
 
         const validationErrors = validationResult(req);
         if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
-    
+
         let data;
         try {
             // if both optional parameters in the req.query are present and valid use them, otherwise return all announcements
             if (req.query.authorID && req.query.authorType) data = await appDataDAO.getAllProfileAnnouncements(req.query.authorID, req.query.authorType);
             else data = await appDataDAO.getAllAnnouncements();
             if (data.error) return res.status(200).json({"message" : data.error});
-            
+
             // apply filters
             data = filterData(req.query, data);
-            
+
             return res.status(200).json(data);
         } catch(err) {
             return res.status(500).json({"error" : err});
@@ -582,13 +533,15 @@ appDataRouter.get('/announcements', [
 appDataRouter.post('/announcements', musicianOrGroupIsLoggedIn, [insertOrUpdateAnnouncementChecks], async(req, res) => {
     const validationErrors = validationResult(req);
     if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
-    
+
     // author ID and type are automatically set based on the authenticated user who is publishing the announcement
     req.body.authorID = req.user.profileID;
     req.body.authorType = req.user.type;
 
     // generated date in format yyyy-mm-dd
     req.body.publishDate = getCurrentDate();
+
+    console.log("trying to POST:", req.body);
 
     let data;
     try {
@@ -607,7 +560,7 @@ appDataRouter.put('/announcements/:announcementID', musicianOrGroupIsLoggedIn, [
     ], async (req, res) => {
         const validationErrors = validationResult(req);
         if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
-        
+
         // an announcement can be modified only by it's Author, so first retrieve the list of all announcements of the authenticated user and check if the demo to be deleted is present or not
         // another way is to create a function in the applicationDataDAO called getAnnouncementByID, and check if it's authorID and authorType correspond to the ones of the authenticated user
         let userAnnouncements;
@@ -627,9 +580,9 @@ appDataRouter.put('/announcements/:announcementID', musicianOrGroupIsLoggedIn, [
         }
 
         if (!found) return res.status(401).json({"error" : "not authorized to modify an announcement published by another user"});
-        
+
         let data;
-        
+
         try {
             data = await appDataDAO.updateAnnouncement(req.params.announcementID, req.body);
             if (data.error) return res.status(200).json({"message" : data.error});
@@ -645,7 +598,7 @@ appDataRouter.delete('/announcements/:announcementID', musicianOrGroupIsLoggedIn
     ], async (req, res) => {
         const validationErrors = validationResult(req);
         if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
-        
+
         // an announcement can be deleted only by it's Author, so first retrieve the list of all announcements of the authenticated user and check if the announcement to be removed is present or not
         // another way is to create a function in the applicationDataDAO called getAnnouncementByID, and check if it's authorID and authorType correspond to the ones of the authenticated user
         let userAnnouncements;
@@ -665,7 +618,7 @@ appDataRouter.delete('/announcements/:announcementID', musicianOrGroupIsLoggedIn
         }
 
         if (!found) return res.status(401).json({"error" : "not authorized to remove an announcement published by another user"});
-        
+
         let data;
 
         try {
@@ -675,86 +628,10 @@ appDataRouter.delete('/announcements/:announcementID', musicianOrGroupIsLoggedIn
         } catch (err) {
             return res.status(500).json({"error" : err});
         }
-        
+
     }
 );
 
-/* ===== Membership Requests Routes ===== */
-
-// list all Membership Requests sent by a Musician
-appDataRouter.get('/membershipRequests', musicianOrGroupIsLoggedIn, async (req, res) => {
-    let data;
-    
-    try {
-        if (req.user.type === "MUSICIAN") data = await appDataDAO.getAllMembershipRequestsByMusicianID(req.user.profileID);
-        else if (req.user.type === "GROUP") data = await appDataDAO.getAllMembershipRequestsByGroupID(req.user.profileID);
-        else return res.status(401).json({"error" : "your profile is not authorized to read membership requests"});
-        if (data.error) return res.status(200).json({"message" : data.error});
-        return res.status(200).json(data);
-    } catch (err) {
-        res.status(500).json({"error" : err});
-    }
-});
-
-// send a new Membership Request (only authenticated Musicians)
-appDataRouter.post('/membershipRequests', musicianIsLoggedIn, [insertMembershipRequestChecks], async (req, res) => {
-    const validationErrors = validationResult(req);
-    if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
-
-    // musicianID is set to the one of the current Authorized Musician
-    req.body.musicianID = req.user.profileID;
-
-    // generated date in format yyyy-mm-dd
-    req.body.publishDate = getCurrentDate();
-
-    let data;
-    try {
-        data = await appDataDAO.insertNewMembershipRequest(req.body);
-        if (data.error) return res.status(200).json({"message" : data.error});
-        return res.status(200).json({"membershipRequestID" : data.membershipRequestID});
-    } catch (err) {
-        if (err.error.errno == 19) return res.status(500).json({"error" : "you can't send multiple requests to the same group"});
-        return res.status(500).json({"error" : err});
-    }
-        
-});
-
-appDataRouter.delete('/membershipRequests/:membershipRequestID', musicianIsLoggedIn, [
-        check("membershipRequestID").exists().withMessage("a membershipRequestID is required").isNumeric().withMessage("membershipRequestID must be a number")
-    ], async (req, res) => {
-        const validationErrors = validationResult(req);
-        if (!validationErrors.isEmpty()) return res.status(422).json({"validation errors" : validationErrors.array()});
-
-        // a membership request can be deleted only by it's Author, so first retrieve the list of all membership requests of the authenticated user and check if the one to be removed is present or not
-        // another way is to create a function in the applicationDataDAO called getMembershpRequesByID, and check if it's musicianID correspond to the the authenticated user
-        let userMembershipRequests;
-        try {
-            userMembershipRequests = await appDataDAO.getAllMembershipRequestsByMusicianID(req.user.profileID);
-            if (userMembershipRequests.error) return res.status(500).json({"error" : userMembershipRequests.error});
-        } catch(err) {
-            return res.status(500).json({"error" : err});
-        }
-
-        let found = false;
-        for (let membershipRequest of userMembershipRequests) {
-            if (membershipRequest.ID == req.params.membershipRequestID) {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) return res.status(401).json({"error" : "not authorized to remove a membership request sent by another user"});
-
-        let data;
-        try {
-            data = await appDataDAO.removeMembershipRequest(req.params.membershipRequestID);
-            if (data.error) return res.status(200).json({"message" : data.error});
-        return res.status(200).json({"changes" : data.changes});
-        } catch (err) {
-            return res.status(500).json({"error" : err});
-        }  
-    }
-);
 
 /* ===== Modules Exports ===== */
 module.exports = appDataRouter;
