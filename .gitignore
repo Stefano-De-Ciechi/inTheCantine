@@ -1,10 +1,2 @@
 node_modules
 package-lock.json
-data/*
-PROCEDIMENTO.txt
-public/media/images/*
-public/media/demos/*
-public/media/fonts/*
-backup
-*.mp4
-*.odp
